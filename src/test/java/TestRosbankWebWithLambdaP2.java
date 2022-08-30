@@ -1,5 +1,7 @@
 import com.codeborne.selenide.CollectionCondition;
 import com.codeborne.selenide.Condition;
+import com.codeborne.selenide.ElementsCollection;
+import com.codeborne.selenide.SelenideElement;
 import com.codeborne.selenide.logevents.SelenideLogger;
 import io.qameta.allure.selenide.AllureSelenide;
 import org.junit.jupiter.api.BeforeAll;
@@ -18,14 +20,14 @@ import static io.qameta.allure.Allure.step;
 @DisplayName("Check menu points and search result")
 public class TestRosbankWebWithLambdaP2 {
     private final String mainPage = "https://www.rosbank.ru/";
-    private final String logoLocator = ".Logo__image";
-    private final String mainMenuItemsLocator = "span[class*='HeaderExtendableMenuV2__item']";
-    private final String mainMenuSubItemsLocator = "[class*='dropdown-open'] span";
-    private final String headerTitleLocator = ".ComponentKit__header .ComponentKit__title";
-    private final String searchButtonLocator = "[class*='topbar-search']";
-    private final String searchInputLocator = "[placeholder='Поиск по сайту']";
-    private final String loadingBarLocator = ".rb-search__container .results__loading";
-    private final String searchResultItemsLocator = "[class*='page_type_search'] yass-li a yass-span";
+    private final SelenideElement logoLocator = $(".Logo__image");
+    private final ElementsCollection mainMenuItemsLocators = $$("span[class*='HeaderExtendableMenuV2__item']");
+    private final ElementsCollection mainMenuSubItemsLocators = $$("[class*='dropdown-open'] span");
+    private final SelenideElement headerTitleLocator = $(".ComponentKit__header .ComponentKit__title");
+    private final SelenideElement searchButtonLocator = $("[class*='topbar-search']");
+    private final SelenideElement searchInputLocator = $("[placeholder='Поиск по сайту']");
+    private final SelenideElement  loadingBarLocator = $(".rb-search__container .results__loading");
+    private final ElementsCollection searchResultItemsLocators = $$("[class*='page_type_search'] yass-li a yass-span");
 
     @BeforeAll
     public static void beforeAll() {
@@ -34,8 +36,8 @@ public class TestRosbankWebWithLambdaP2 {
 
     @BeforeEach
     public void setUp() {
-        step("Открыть страницу по ссылке: " + mainPage, () -> open(mainPage));
-        step("Проверить наличие лого", () -> $(logoLocator)
+        step("Открыть главную страницу по ссылке: " + mainPage, () -> open(mainPage));
+        step("Проверить наличие лого", () -> logoLocator
                 .shouldHave(Condition.attribute("alt", "Росбанк")));
     }
 
@@ -44,11 +46,11 @@ public class TestRosbankWebWithLambdaP2 {
     @ParameterizedTest(name = "Result of selecting tab \"{0}\" -> \"{1}\" is page with text \"{1}\"")
     public void fillFormTest(String param1, String param2) {
         step("Кликнуть в главном меню на '" + param1 + "'",
-                () -> $$(mainMenuItemsLocator).findBy(Condition.text(param1)).click());
+                () -> mainMenuItemsLocators.findBy(Condition.text(param1)).click());
         step("Кликнуть в подпункте меню на '" + param2 + "'",
-                () -> $$(mainMenuSubItemsLocator).findBy(Condition.text(param2)).click());
+                () -> mainMenuSubItemsLocators.findBy(Condition.text(param2)).click());
         step("На открывшейся странице есть текст '" + param2 + "'",
-                () -> $(headerTitleLocator).shouldHave(Condition.text(param2)));
+                () -> headerTitleLocator.shouldHave(Condition.text(param2)));
     }
 
     @DisplayName("Check search result")
@@ -56,18 +58,18 @@ public class TestRosbankWebWithLambdaP2 {
     @ParameterizedTest(name = "Result of searching \"{0}\" is page with text \"{1}\" and \"{2}\"")
     public void checkSearchResultTest(String param1, String param2, String param3) {
         step("Кликнуть по кнопке поиска (лупа)",
-                () -> $(searchButtonLocator).click());
+                () -> searchButtonLocator.click());
         step("В строке поиска ввести '" + param1 + "'",
-                () -> $(searchInputLocator).setValue(param1).pressEnter());
+                () -> searchInputLocator.setValue(param1).pressEnter());
         step("Дождаться прогрузки результатов поиска",
                 () -> {
-                    while ($(loadingBarLocator).exists()
-                            || $$(searchResultItemsLocator).size() < 9) {
+                    while (loadingBarLocator.exists()
+                            || searchResultItemsLocators.size() < 9) {
                         sleep(300);
                     }
                 });
         step("В результатах поиска есть строки с текстом '" + param2 + "' и '" + param3 + "'",
-                () -> $$(searchResultItemsLocator)
+                () -> searchResultItemsLocators
                         .should(CollectionCondition.anyMatch("Search results don't contain char sequence: " + param2,
                                 e -> e.getText().toLowerCase(Locale.ROOT).contains(param2)))
                         .should(CollectionCondition.anyMatch("Search results don't contain char sequence: " + param3,
@@ -79,20 +81,19 @@ public class TestRosbankWebWithLambdaP2 {
     @ParameterizedTest(name = "Result of searching \"{0}\" is not null")
     public void testWithArgumentsSource(String argument) {
         step("Кликнуть на кнопке поиска (лупа)",
-                () -> $(searchButtonLocator).click());
+                () -> searchButtonLocator.click());
         step("В строке поиска ввести '" + argument + "'",
-                () -> $(searchInputLocator).setValue(argument).pressEnter()
+                () -> searchInputLocator.setValue(argument).pressEnter()
         );
         step("Дождаться прогрузки результатов поиска",
                 () ->
                 {
-                    while ($(loadingBarLocator).exists()) {
+                    while (loadingBarLocator.exists()) {
                         sleep(300);
                     }
-                }
-        );
+                });
         step("Результатом поиска явлется более, чем 1 строка",
-                () -> $$(searchResultItemsLocator)
+                () -> searchResultItemsLocators
                         .should(CollectionCondition.sizeGreaterThan(1))
         );
     }
