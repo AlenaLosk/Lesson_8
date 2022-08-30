@@ -1,16 +1,26 @@
 import com.codeborne.selenide.CollectionCondition;
 import com.codeborne.selenide.Condition;
+import com.codeborne.selenide.logevents.SelenideLogger;
+import io.qameta.allure.selenide.AllureSelenide;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.*;
+import org.junit.jupiter.params.provider.ArgumentsSource;
+import org.junit.jupiter.params.provider.CsvFileSource;
+import org.junit.jupiter.params.provider.CsvSource;
+
 import java.util.Locale;
 
 import static com.codeborne.selenide.Selenide.*;
-import static com.codeborne.selenide.Selenide.$$;
 
 @DisplayName("Check menu points and search result")
-public class TestRosbankWeb {
+public class TestRosbankWebClearSelenideP1 {
+
+    @BeforeAll
+    public static void beforeAll() {
+        SelenideLogger.addListener("allure", new AllureSelenide());
+    }
 
     @BeforeEach
     public void setUp() {
@@ -19,7 +29,7 @@ public class TestRosbankWeb {
     }
 
     @DisplayName("Check main menu points")
-    @CsvSource(value = {"Карты, Дебетовые карты","Карты, Кредитные карты"})
+    @CsvSource(value = {"Карты, Дебетовые карты", "Карты, Кредитные карты", "Карты, Черти-что"})
     @ParameterizedTest(name = "Result of selecting tab \"{0}\" -> \"{1}\" is page with text \"{1}\"")
     public void fillFormTest(String param1, String param2) {
         $$("span[class*='HeaderExtendableMenuV2__item']").findBy(Condition.text(param1)).click();
